@@ -54,6 +54,7 @@ pipeline {
       //  PROJECT_MAL The MAL of the project
       
       GITHUB_TOKEN_CREDENTIALS = 'SCMAUTO_GITHUB'
+      GITHUB_ALTER_CREDENTIALS = 'JANITOKEN'
       GITHUB_SSH_CREDENTIALS = 'SCMAUTO_SSH_DEVOPS_PIPELINE'
       AMAZON_CREDENTIALS = 'awsCredentialsPR'
       AMAZON_CREDENTIALS_PR = 'awsCredentials'
@@ -668,7 +669,7 @@ pipeline {
         agent {
           dockerfile {
             filename 'Dockerfile'
-            dir 'cicd/docker/jira'
+            dir 'cicd/docker/sonar-scanner'
             label 'Docker-enabled'
             // registryUrl DOCKER_REGISTRY
             // registryCredentialsId DOCKER_LOGIN_CREDENTIALS
@@ -677,11 +678,12 @@ pipeline {
         steps {
           script {
             dir('src/chi-vue') {
-              unstash name: "DIST-CHI-VUE"
-              unstash name: "NODEMODULES-CHI-VUE"
+              jslYarnWrapper('install')
+              jslNpmWrapper('run build:component')
               jslNpmWrapper('pack')
-              jslNpmWrapper('login --scope=@centurylink --registry=https://npm.pkg.github.com')
-              jslNpmWrapper('publish')
+              // jslNpmWrapper('login --scope=@centurylink --registry=https://npm.pkg.github.com')
+              // jslNpmWrapper('publish')
+              jslNpmPublish('false', env.GITHUB_ALTER_CREDENTIALS)
             }
           }
         }
